@@ -2,9 +2,6 @@
 
 cola_t *cola_crear()
 {
-
-
-	
 	return NULL;
 }
 
