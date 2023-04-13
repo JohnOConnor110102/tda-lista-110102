@@ -37,6 +37,9 @@ bool insertar_en_lista_sin_nodos(lista_t *lista, void *elemento, nodo_t *nodo)
 
 nodo_t *iterar_hasta_posicion(lista_t *lista, size_t posicion)
 {
+	if (lista == NULL || posicion >= lista->cantidad_nodos)
+		return NULL;
+
 	size_t posicion_actual = 0;
 	nodo_t *nodo_actual = lista->inicio;
 	nodo_t *nodo_aux;
@@ -80,9 +83,8 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 	if (lista == NULL)
 		return NULL;
 
-	if (posicion >= lista->cantidad_nodos &&
-	    lista_insertar(lista, elemento) != NULL) {
-		return lista;
+	if (posicion >= lista->cantidad_nodos) {
+		return lista_insertar(lista, elemento);
 	}
 	nodo_t *nodo_a_agregar = malloc(sizeof(nodo_t));
 	if (nodo_a_agregar == NULL)
@@ -90,29 +92,52 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 
 	nodo_a_agregar->elemento = elemento;
 	nodo_a_agregar->siguiente = NULL;
-	if (lista->cantidad_nodos == LISTA_SIN_NODOS) {
-		insertar_en_lista_sin_nodos(lista, elemento, nodo_a_agregar);
-		return lista;
-	}
-	nodo_t *nodo_posicion = iterar_hasta_posicion(lista, posicion);
-	nodo_a_agregar->siguiente = nodo_posicion->siguiente;
-	nodo_posicion->siguiente = nodo_a_agregar;
-
+	nodo_t *nodo_posicion_menos_uno =
+		iterar_hasta_posicion(lista, posicion - 1);
+	nodo_a_agregar->siguiente = nodo_posicion_menos_uno->siguiente;
+	nodo_posicion_menos_uno->siguiente = nodo_a_agregar;
+	lista->cantidad_nodos++;
 	return lista;
 }
-
+// ! Anotar ne readme que asumo que en caso de que la lista está vacía, se considera error.
 void *lista_quitar(lista_t *lista)
 {
-	return NULL;
+	if (lista == NULL || lista->cantidad_nodos == LISTA_SIN_NODOS)
+		return NULL;
+
+	nodo_t *nodo_fin_menos_uno =
+		iterar_hasta_posicion(lista, lista->cantidad_nodos - 2);
+
+	void *elemento_nodo = nodo_fin_menos_uno->siguiente->elemento;
+	free(nodo_fin_menos_uno->siguiente);
+	nodo_fin_menos_uno->siguiente = NULL;
+	lista->cantidad_nodos--;
+	return elemento_nodo;
 }
 
 void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 {
-	return NULL;
+	if (lista == NULL || lista->cantidad_nodos == LISTA_SIN_NODOS)
+		return NULL;
+
+	if (posicion >= lista->cantidad_nodos - 1)
+		return lista_quitar(lista);
+
+	nodo_t *nodo_eliminar_menos_uno =
+		iterar_hasta_posicion(lista, posicion - 1);
+	nodo_t *nodo_eliminar = nodo_eliminar_menos_uno->siguiente;
+	void *elemento_nodo = nodo_eliminar->elemento;
+	nodo_eliminar_menos_uno->siguiente = nodo_eliminar->siguiente;
+	free(nodo_eliminar);
+	lista->cantidad_nodos--;
+	return elemento_nodo;
 }
 
 void *lista_elemento_en_posicion(lista_t *lista, size_t posicion)
 {
+	if (lista == NULL || posicion >= lista->cantidad_nodos)
+		return NULL;
+
 	nodo_t *nodo = iterar_hasta_posicion(lista, posicion);
 	return nodo->elemento;
 }
