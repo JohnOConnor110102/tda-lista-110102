@@ -24,6 +24,7 @@ struct lista {
 
 struct lista_iterador {
 	nodo_t *nodo_actual;
+	size_t posicion_actual;
 	lista_t *lista;
 };
 
@@ -54,6 +55,17 @@ nodo_t *iterar_hasta_posicion(lista_t *lista, size_t posicion)
 	return nodo_actual;
 }
 
+nodo_t *crear_nodo(void *elemento)
+{
+	nodo_t *nodo = malloc(sizeof(nodo_t));
+	if (nodo == NULL)
+		return NULL;
+
+	nodo->elemento = elemento;
+	nodo->siguiente = NULL;
+	return nodo;
+}
+
 lista_t *lista_crear()
 {
 	lista_t *lista = calloc(1, sizeof(lista_t));
@@ -68,12 +80,7 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 	if (lista == NULL)
 		return NULL;
 
-	nodo_t *nodo = malloc(sizeof(nodo_t));
-	if (nodo == NULL)
-		return NULL;
-
-	nodo->elemento = elemento;
-	nodo->siguiente = NULL;
+	nodo_t *nodo = crear_nodo(elemento);
 	if (lista->cantidad_nodos == LISTA_SIN_NODOS) {
 		insertar_en_lista_sin_nodos(lista, elemento, nodo);
 		return lista;
@@ -93,20 +100,13 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 	if (posicion >= lista->cantidad_nodos) {
 		return lista_insertar(lista, elemento);
 	}
-	nodo_t *nodo_a_agregar = malloc(sizeof(nodo_t));
-	if (nodo_a_agregar == NULL)
-		return NULL;
-
-	nodo_a_agregar->elemento = elemento;
-	nodo_a_agregar->siguiente = NULL;
-
+	nodo_t *nodo_a_agregar = crear_nodo(elemento);
 	if (posicion == POSICION_CERO) {
 		nodo_a_agregar->siguiente = lista->inicio;
 		lista->inicio = nodo_a_agregar;
 		lista->cantidad_nodos++;
 		return lista;
 	}
-
 	nodo_t *nodo_posicion_menos_uno =
 		iterar_hasta_posicion(lista, posicion - 1);
 	nodo_a_agregar->siguiente = nodo_posicion_menos_uno->siguiente;
@@ -114,7 +114,7 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 	lista->cantidad_nodos++;
 	return lista;
 }
-// ! Anotar ne readme que asumo que en caso de que la lista está vacía, se considera error.
+// ! Anotar en readme que asumo que en caso de que la lista está vacía, se considera error.
 void *lista_quitar(lista_t *lista)
 {
 	if (lista == NULL || lista->cantidad_nodos == LISTA_SIN_NODOS)
@@ -126,7 +126,6 @@ void *lista_quitar(lista_t *lista)
 		lista->cantidad_nodos--;
 		return elemento_unico_nodo;
 	}
-
 	nodo_t *nodo_fin_menos_uno =
 		iterar_hasta_posicion(lista, lista->cantidad_nodos - 2);
 	void *elemento_nodo = nodo_fin_menos_uno->siguiente->elemento;
@@ -153,7 +152,6 @@ void *lista_quitar_de_posicion(lista_t *lista, size_t posicion)
 		lista->cantidad_nodos--;
 		return elemento_nodo_cero;
 	}
-
 	nodo_t *nodo_eliminar_menos_uno =
 		iterar_hasta_posicion(lista, posicion - 1);
 	nodo_t *nodo_eliminar = nodo_eliminar_menos_uno->siguiente;
@@ -236,6 +234,9 @@ size_t lista_tamanio(lista_t *lista)
 
 void lista_destruir(lista_t *lista)
 {
+	if (lista == NULL)
+		return;
+
 	int contador = 0;
 	nodo_t *nodo_actual = lista->inicio;
 	nodo_t *nodo_aux;
@@ -268,46 +269,76 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 
 lista_iterador_t *lista_iterador_crear(lista_t *lista)
 {
-	/* 
-	* se crea con malloc
-	* pos actual cero
-	* lista es lista 
-	*/
-	return NULL;
+	if (lista == NULL)
+		return NULL;
+
+	lista_iterador_t *iterador = malloc(sizeof(lista_iterador_t));
+	if (iterador == NULL)
+		return NULL;
+
+	iterador->lista = lista;
+	iterador->posicion_actual = 0;
+	iterador->nodo_actual = lista->inicio;
+	return iterador;
 }
 
 bool lista_iterador_tiene_siguiente(lista_iterador_t *iterador)
 {
-	/* 
-	* si posicion actual es < a cantidad de elementos se puede seguir 
-	* sino no.
-	*/
+	if (iterador == NULL ||
+	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS)
+		return false;
+
+	if (iterador->posicion_actual < iterador->lista->cantidad_nodos) {
+		return true;
+	}
+
 	return false;
 }
 
 bool lista_iterador_avanzar(lista_iterador_t *iterador)
 {
-	/* 
-	* posicion actual ++
-	? nodo igual nodo siguiente
-	*/
-	return false;
+	if (iterador == NULL ||
+	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS ||
+	    !lista_iterador_tiene_siguiente(iterador))
+		return false;
+	/* if (iterador->nodo_actual->siguiente == NULL)
+		return false; */
+
+	iterador->nodo_actual = iterador->nodo_actual->siguiente;
+	iterador->posicion_actual++;
+	return true;
 }
 
 void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 {
-	/* 
-	* it lista elementos sub it posicion actual
-	*/
-	return NULL;
+	if (iterador == NULL ||
+	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS ||
+	    !lista_iterador_tiene_siguiente(iterador))
+		return NULL;
+
+	return iterador->nodo_actual->elemento;
 }
 
 void lista_iterador_destruir(lista_iterador_t *iterador)
 {
+	if (iterador == NULL) {
+		return;
+	}
+	free(iterador);
 }
 
 size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 			       void *contexto)
 {
-	return 0;
+	if (lista == NULL || funcion == NULL)
+		return 0;
+
+	size_t contador = 0;
+	for (size_t i = 0; i < lista->cantidad_nodos; i++) {
+		contador++;
+		if (!funcion(lista_elemento_en_posicion(lista, i), contexto))
+			return contador;
+	}
+
+	return contador;
 }
