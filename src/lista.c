@@ -81,6 +81,9 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 		return NULL;
 
 	nodo_t *nodo = crear_nodo(elemento);
+	if (nodo == NULL)
+		return NULL;
+
 	if (lista->cantidad_nodos == LISTA_SIN_NODOS) {
 		insertar_en_lista_sin_nodos(lista, elemento, nodo);
 		return lista;
@@ -101,6 +104,9 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 		return lista_insertar(lista, elemento);
 	}
 	nodo_t *nodo_a_agregar = crear_nodo(elemento);
+	if (nodo_a_agregar == NULL)
+		return NULL;
+
 	if (posicion == POSICION_CERO) {
 		nodo_a_agregar->siguiente = lista->inicio;
 		lista->inicio = nodo_a_agregar;
@@ -223,7 +229,7 @@ bool lista_vacia(lista_t *lista)
 
 	return false;
 }
-// ! Aclarar que asumo que si la lista no existe, devuelve cero.
+
 size_t lista_tamanio(lista_t *lista)
 {
 	if (lista == NULL)
@@ -239,7 +245,7 @@ void lista_destruir(lista_t *lista)
 
 	int contador = 0;
 	nodo_t *nodo_actual = lista->inicio;
-	nodo_t *nodo_aux;
+	nodo_t *nodo_aux = nodo_actual->siguiente;
 	while (contador < lista->cantidad_nodos) {
 		nodo_aux = nodo_actual->siguiente;
 		free(nodo_actual);
@@ -251,12 +257,17 @@ void lista_destruir(lista_t *lista)
 
 void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 {
-	if (lista == NULL || funcion == NULL)
+	if (lista == NULL)
 		return;
+
+	if (funcion == NULL) {
+		lista_destruir(lista);
+		return;
+	}
 
 	int contador = 0;
 	nodo_t *nodo_actual = lista->inicio;
-	nodo_t *nodo_aux;
+	nodo_t *nodo_aux = nodo_actual->siguiente;
 	while (contador < lista->cantidad_nodos) {
 		nodo_aux = nodo_actual->siguiente;
 		funcion(nodo_actual->elemento);
@@ -299,10 +310,8 @@ bool lista_iterador_avanzar(lista_iterador_t *iterador)
 {
 	if (iterador == NULL ||
 	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS ||
-	    !lista_iterador_tiene_siguiente(iterador))
+	    iterador->posicion_actual == iterador->lista->cantidad_nodos)
 		return false;
-	/* if (iterador->nodo_actual->siguiente == NULL)
-		return false; */
 
 	iterador->nodo_actual = iterador->nodo_actual->siguiente;
 	iterador->posicion_actual++;
@@ -313,8 +322,9 @@ void *lista_iterador_elemento_actual(lista_iterador_t *iterador)
 {
 	if (iterador == NULL ||
 	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS ||
-	    !lista_iterador_tiene_siguiente(iterador))
+	    iterador->posicion_actual == iterador->lista->cantidad_nodos) {
 		return NULL;
+	}
 
 	return iterador->nodo_actual->elemento;
 }
@@ -336,7 +346,8 @@ size_t lista_con_cada_elemento(lista_t *lista, bool (*funcion)(void *, void *),
 	size_t contador = 0;
 	for (size_t i = 0; i < lista->cantidad_nodos; i++) {
 		contador++;
-		if (!funcion(lista_elemento_en_posicion(lista, i), contexto))
+		if (!funcion(iterar_hasta_posicion(lista, i)->elemento,
+			     contexto))
 			return contador;
 	}
 
