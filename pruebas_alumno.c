@@ -1,5 +1,6 @@
 #include "pa2m.h"
 #include "src/lista.h"
+#include "src/pila.h"
 
 void pruebas_lista_crear()
 {
@@ -8,7 +9,7 @@ void pruebas_lista_crear()
 	pa2m_afirmar(lista_tamanio(lista) == 0, "La lista creada está vacía.");
 	pa2m_afirmar(
 		lista_primero(lista) == NULL && lista_ultimo(lista) == NULL,
-		"Se inicializan en NULL los elementos principio y fin de la lista.\n");
+		"Se inicializan en NULL los elementos principio y fin de la lista.");
 	lista_destruir(lista);
 }
 
@@ -34,7 +35,7 @@ void pruebas_lista_insertar()
 		     "Se actualiza correctamente el tamaño de la lista.");
 	pa2m_afirmar(
 		lista_primero(lista) == NULL && lista_ultimo(lista) == &tres,
-		"Se actualizan correctamente el principio y fin de la lista.\n");
+		"Se actualizan correctamente el principio y fin de la lista.");
 	lista_destruir(lista);
 }
 
@@ -75,7 +76,7 @@ void pruebas_lista_insertar_en_posicion()
 		     "Se actualiza correctamente el tamaño de la lista.");
 	pa2m_afirmar(
 		lista_primero(lista) == &cero && lista_ultimo(lista) == &uno,
-		"Se actualizan correctamente el principio y fin de la lista.\n");
+		"Se actualizan correctamente el principio y fin de la lista.");
 	lista_destruir(lista);
 }
 
@@ -97,7 +98,7 @@ void pruebas_lista_elemento_en_posicion()
 	pa2m_afirmar(lista_elemento_en_posicion(lista, 0) == &uno &&
 			     lista_elemento_en_posicion(lista, 1) == &dos &&
 			     lista_elemento_en_posicion(lista, 2) == &tres,
-		     "Se obtienen los elementos correctos.\n");
+		     "Se obtienen los elementos correctos.");
 	lista_destruir(lista);
 }
 
@@ -111,7 +112,7 @@ void pruebas_lista_tamanio()
 	lista_insertar(lista, &dos);
 	lista_insertar(lista, &tres);
 	pa2m_afirmar(lista_tamanio(lista) == 3,
-		     "Se obtiene el tamaño correcto.\n");
+		     "Se obtiene el tamaño correcto.");
 
 	lista_destruir(lista);
 }
@@ -157,7 +158,7 @@ void pruebas_lista_buscar_elemento()
 		     "Se buscan elementos correctamente.");
 	pa2m_afirmar(lista_buscar_elemento(lista, comparador, &invalido) ==
 			     NULL,
-		     "Buscar un elemento invalido devuelve NULL.\n");
+		     "Buscar un elemento invalido devuelve NULL.");
 	lista_destruir(lista);
 }
 
@@ -185,11 +186,11 @@ void pruebas_lista_quitar()
 	pa2m_afirmar(lista_quitar(lista) == &siete &&
 			     lista_quitar(lista) == &seis &&
 			     lista_elemento_en_posicion(lista, 5) == NULL,
-		     "Se eliminan elementos correctamente.\n");
+		     "Se eliminan elementos correctamente.");
 	pa2m_afirmar(lista_tamanio(lista) == 5,
 		     "Se actualiza correctamente el tamaño de la lista.");
 	pa2m_afirmar(lista_ultimo(lista) == &cinco,
-		     "Se actualiza correctamente el fin de la lista.\n");
+		     "Se actualiza correctamente el fin de la lista.");
 	lista_destruir(lista);
 }
 
@@ -226,7 +227,178 @@ void pruebas_lista_quitar_de_posicion()
 		     "Se actualiza correctamente el tamanio de la lista.");
 	pa2m_afirmar(
 		lista_primero(lista) == &uno && lista_ultimo(lista) == &tres,
-		"Se actualizan correctamente el principio y fin de la lista.\n");
+		"Se actualizan correctamente el principio y fin de la lista.");
+	lista_destruir(lista);
+}
+
+void pruebas_lista_primero_y_ultimo()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	pa2m_afirmar(
+		lista_primero(NULL) == NULL,
+		"No se puede acceder al primer elemento de una lista NULL.");
+	pa2m_afirmar(
+		lista_ultimo(NULL) == NULL,
+		"No se puede acceder al último elemento de una lista NULL.");
+	pa2m_afirmar(
+		lista_primero(lista) == NULL,
+		"No se puede acceder al primer elemento de una lista vacía");
+	pa2m_afirmar(
+		lista_ultimo(lista) == NULL,
+		"No se puede acceder al último elemento de una lista vacía");
+	lista_insertar_en_posicion(lista, &uno, 0);
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	pa2m_afirmar(lista_primero(lista) == &uno,
+		     "El primer elemento de la lista es el correcto.");
+	pa2m_afirmar(lista_ultimo(lista) == &cuatro,
+		     "El último elemento de la lista es el correcto.");
+	lista_destruir(lista);
+}
+
+void pruebas_lista_vacia()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	pa2m_afirmar(lista_vacia(NULL) == true,
+		     "Devuelve true si la lista es NULL.");
+	pa2m_afirmar(lista_vacia(lista) == true,
+		     "Devuelve true si la lista está vacía.");
+	lista_insertar_en_posicion(lista, &uno, 0);
+	pa2m_afirmar(lista_vacia(lista) == false,
+		     "Devuelve false si la lista tiene un elemento.");
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	pa2m_afirmar(lista_vacia(lista) == false,
+		     "Devuelve false si la lista tiene más de un elemento.");
+	lista_destruir(lista);
+}
+
+void pruebas_lista_iterador_crear()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	pa2m_afirmar(lista_iterador_crear(NULL) == NULL,
+		     "No se puede crear un iterador con una lista NULL.");
+	lista_iterador_t *it = lista_iterador_crear(lista);
+	pa2m_afirmar(it != NULL,
+		     "Se puede crear un iterador con una lista vacía.");
+	lista_iterador_destruir(it);
+	lista_insertar_en_posicion(lista, &uno, 0);
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	lista_iterador_t *it_2 = lista_iterador_crear(lista);
+	pa2m_afirmar(it_2 != NULL,
+		     "Se puede crear un iterador con una lista con elementos.");
+	lista_iterador_destruir(it_2);
+	lista_destruir(lista);
+}
+
+void pruebas_lista_iterador_tiene_siguiente()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	lista_iterador_t *it = lista_iterador_crear(lista);
+	pa2m_afirmar(lista_iterador_tiene_siguiente(NULL) == false,
+		     "Devuelve false si el iterador es NULL.");
+	pa2m_afirmar(lista_iterador_tiene_siguiente(it) == false,
+		     "Devuelve false si la lista está vacía,");
+	lista_iterador_destruir(it);
+	lista_insertar_en_posicion(lista, &uno, 0);
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	lista_iterador_t *it_2 = lista_iterador_crear(lista);
+	pa2m_afirmar(
+		lista_iterador_tiene_siguiente(it_2) == true,
+		"Devuelve true si el iterador está en el primer elemento.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_tiene_siguiente(it_2) == true,
+		"Devuelve true si el iterador está en el segundo elemento.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_tiene_siguiente(it_2) == true,
+		"Devuelve true si el iterador está en el tercer elemento.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_tiene_siguiente(it_2) == true,
+		"Devuelve true si el iterador está en el último elemento.");
+	lista_iterador_destruir(it_2);
+	lista_destruir(lista);
+}
+
+void pruebas_lista_iterador_avanzar()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	lista_iterador_t *it = lista_iterador_crear(lista);
+	pa2m_afirmar(lista_iterador_avanzar(NULL) == false,
+		     "No se puede avanzar con un iterador NULL.");
+	pa2m_afirmar(lista_iterador_avanzar(it) == false,
+		     "No se puede avanzar en una lista vacía");
+	lista_iterador_destruir(it);
+	lista_insertar_en_posicion(lista, &uno, 0);
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	lista_iterador_t *it_2 = lista_iterador_crear(lista);
+	pa2m_afirmar(
+		lista_iterador_avanzar(it_2) == true,
+		"Devuelve true si el iterador estaba en el primer elemento.");
+	pa2m_afirmar(
+		lista_iterador_avanzar(it_2) == true,
+		"Devuelve true si el iterador estaba en el segundo elemento.");
+	pa2m_afirmar(
+		lista_iterador_avanzar(it_2) == true,
+		"Devuelve true si el iterador estaba en el tercer elemento.");
+	pa2m_afirmar(
+		lista_iterador_avanzar(it_2) == false,
+		"Devuelve false si el iterador estaba en el último elemento.");
+	lista_iterador_destruir(it_2);
+	lista_destruir(lista);
+}
+
+void pruebas_lista_iterador_elemento_actual()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	lista_iterador_t *it = lista_iterador_crear(lista);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(NULL) == NULL,
+		"No se puede acceder al elemento actual de un iterador NULL.");
+	pa2m_afirmar(lista_iterador_elemento_actual(it) == NULL,
+		     "Devuelve NULL si la lista está vacía.");
+	lista_iterador_destruir(it);
+	lista_insertar_en_posicion(lista, &uno, 0);
+	lista_insertar_en_posicion(lista, &dos, 1);
+	lista_insertar_en_posicion(lista, &tres, 2);
+	lista_insertar_en_posicion(lista, &cuatro, 3);
+	lista_iterador_t *it_2 = lista_iterador_crear(lista);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(it_2) == &uno,
+		"El elemento actual en la primera posición es el correcto.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(it_2) == &dos,
+		"El elemento actual en la segunda posición es el correcto.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(it_2) == &tres,
+		"El elemento actual en la tercer posición es el correcto.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(it_2) == &cuatro,
+		"El elemento actual en la última posición es el correcto.");
+	lista_iterador_avanzar(it_2);
+	pa2m_afirmar(
+		lista_iterador_elemento_actual(it_2) == NULL,
+		"El elemento actual, habiendo invocado a `lista_iterador_avanzar` estando en la última posición es el correcto.");
+	lista_iterador_destruir(it_2);
 	lista_destruir(lista);
 }
 
@@ -248,6 +420,155 @@ void pruebas_de_lista()
 	pruebas_lista_quitar();
 	pa2m_nuevo_grupo("Pruebas `lista_quitar_de_posicion`");
 	pruebas_lista_quitar_de_posicion();
+	pa2m_nuevo_grupo("Pruebas `lista_primero` y `lista_ultimo`");
+	pruebas_lista_primero_y_ultimo();
+	pa2m_nuevo_grupo("Pruebas `lista_vacia`");
+	pruebas_lista_vacia();
+	pa2m_nuevo_grupo("Pruebas `lista_iterador_crear`");
+	pruebas_lista_iterador_crear();
+	pa2m_nuevo_grupo("Pruebas `lista_iterador_tiene_siguiente`");
+	pruebas_lista_iterador_tiene_siguiente();
+	pa2m_nuevo_grupo("Pruebas `lista_iterador_avanzar`");
+	pruebas_lista_iterador_avanzar();
+	pa2m_nuevo_grupo("Pruebas `lista_iterador_elemento_actual`");
+	pruebas_lista_iterador_elemento_actual();
+}
+
+void pruebas_pila_crear()
+{
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila != NULL, "Se puede crar una pila.");
+	pa2m_afirmar(lista_tamanio((lista_t *)pila) == 0,
+		     "La pila creada está vacía.");
+	pa2m_afirmar(
+		lista_primero((lista_t *)pila) == NULL &&
+			lista_ultimo((lista_t *)pila) == NULL,
+		"Se inicializan en NULL los elementos principio y fin de la pila.");
+	lista_destruir((lista_t *)pila);
+}
+
+void pruebas_pila_apilar()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila_apilar(NULL, &uno) == NULL,
+		     "No se puede apilar con una pila NULL.");
+	pa2m_afirmar(pila_apilar(pila, NULL) == pila,
+		     "Se puede apilar un elemento NULL.");
+	pa2m_afirmar(pila_apilar(pila, &dos) == pila &&
+			     pila_apilar(pila, &tres) == pila &&
+			     pila_apilar(pila, &cuatro) == pila,
+		     "Se pueden apilar varios elementos");
+	pa2m_afirmar(pila_tamanio(pila) == 4,
+		     "Se actualiza correctamente el tamanio de la pila.");
+	pila_destruir(pila);
+}
+
+void pruebas_pila_desapilar()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila_desapilar(NULL) == NULL,
+		     "No se puede desapilar con una pula NULL.");
+	pa2m_afirmar(pila_desapilar(pila) == NULL,
+		     "No se puede desapilar un elemento de una lista vacía.");
+	pila_apilar(pila, &uno);
+	pila_apilar(pila, &dos);
+	pila_apilar(pila, &tres);
+	pila_apilar(pila, &cuatro);
+	pa2m_afirmar(
+		pila_desapilar(pila) == &cuatro,
+		"Se puede desapilar un elemento, y devuelve el elemento correcto.");
+	pa2m_afirmar(pila_tamanio(pila) == 3,
+		     "Se actualiza correctamente el tamanio de la pila.");
+	pila_desapilar(pila);
+	pila_desapilar(pila);
+	pila_desapilar(pila);
+	pa2m_afirmar(pila_tamanio(pila) == 0,
+		     "Se pueden desapilar todos los elementos de una pila.");
+	pila_destruir(pila);
+}
+
+void pruebas_pila_tope()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila_tope(NULL) == NULL,
+		     "No se puede saber el tope de una pila NULL.");
+	pa2m_afirmar(pila_tope(pila) == NULL,
+		     "No se puede saber el tope de una lista vacía.");
+	pila_apilar(pila, &uno);
+	pila_apilar(pila, &dos);
+	pila_apilar(pila, &tres);
+	pila_apilar(pila, &cuatro);
+	pa2m_afirmar(pila_tope(pila) == &cuatro, "El tope es el correcto.");
+	pila_desapilar(pila);
+	pa2m_afirmar(pila_tope(pila) == &tres,
+		     "El tope es el correcto luego de desapilar.");
+	pila_desapilar(pila);
+	pa2m_afirmar(pila_tope(pila) == &dos,
+		     "El tope es el correcto luego de desapilar.");
+	pila_desapilar(pila);
+	pa2m_afirmar(pila_tope(pila) == &uno,
+		     "El tope es el correcto luego de desapilar.");
+	pila_destruir(pila);
+}
+
+void pruebas_pila_tamanio()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila_tamanio(NULL) == 0, "Devuelve 0 con una pila NULL.");
+	pa2m_afirmar(pila_tamanio(pila) == 0,
+		     "El tamaño de una pila vacía es 0.");
+	pila_apilar(pila, &uno);
+	pa2m_afirmar(pila_tamanio(pila) == 1,
+		     "El tamaño es el correcto luego de apilar.");
+	pila_apilar(pila, &dos);
+	pa2m_afirmar(pila_tamanio(pila) == 2,
+		     "El tamaño es el correcto luego de apilar.");
+	pila_apilar(pila, &tres);
+	pa2m_afirmar(pila_tamanio(pila) == 3,
+		     "El tamaño es el correcto luego de apilar.");
+	pila_apilar(pila, &cuatro);
+	pa2m_afirmar(pila_tamanio(pila) == 4,
+		     "El tamaño es el correcto luego de apilar.");
+	pila_destruir(pila);
+}
+
+void pruebas_pila_vacia()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	pila_t *pila = (pila_t *)lista_crear();
+	pa2m_afirmar(pila_vacia(NULL) == false,
+		     "Devuelve false con una pila NULL.");
+	pa2m_afirmar(pila_vacia(pila) == true,
+		     "Devuelve true con una pila sin elementos.");
+	pila_apilar(pila, &uno);
+	pa2m_afirmar(pila_vacia(pila) == false,
+		     "Devuelve false con una pila con un elemento.");
+	pila_apilar(pila, &dos);
+	pila_apilar(pila, &tres);
+	pila_apilar(pila, &cuatro);
+	pa2m_afirmar(pila_vacia(pila) == false,
+		     "Devuelve false con una pila con varios elementos.");
+	pila_destruir(pila);
+}
+
+void pruebas_de_pila()
+{
+	pa2m_nuevo_grupo("Pruebas `pila_crear`");
+	pruebas_pila_crear();
+	pa2m_nuevo_grupo("Pruebas `pila_apilar`");
+	pruebas_pila_apilar();
+	pa2m_nuevo_grupo("Pruebas `pila_desapilar`");
+	pruebas_pila_desapilar();
+	pa2m_nuevo_grupo("Pruebas `pila_tope`");
+	pruebas_pila_tope();
+	pa2m_nuevo_grupo("Pruebas `pila_tamanio`");
+	pruebas_pila_tamanio();
+	pa2m_nuevo_grupo("Pruebas `pila_vacia`");
+	pruebas_pila_vacia();
 }
 
 int main()
@@ -258,5 +579,7 @@ int main()
 	pa2m_nuevo_grupo("------------- PRUEBAS DE LISTA --------------");
 	pruebas_de_lista();
 
+	pa2m_nuevo_grupo("--------------- PRUEBAS PILA ----------------");
+	pruebas_de_pila();
 	return pa2m_mostrar_reporte();
 }
