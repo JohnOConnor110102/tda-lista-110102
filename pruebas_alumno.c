@@ -297,7 +297,6 @@ void pruebas_lista_destuir_todo()
 	lista_destruir_todo(lista, sumar_uno);
 	pa2m_afirmar(uno == 2 && dos == 3 && tres == 4 && cuatro == 5,
 		     "Se aplicó la función a todos los elementos.");
-	lista_destruir(lista);
 }
 
 void pruebas_lista_iterador_crear()
