@@ -1,6 +1,7 @@
 #include "pa2m.h"
 #include "src/lista.h"
 #include "src/pila.h"
+#include "src/cola.h"
 
 void pruebas_lista_crear()
 {
@@ -277,6 +278,28 @@ void pruebas_lista_vacia()
 	lista_destruir(lista);
 }
 
+void sumar_uno(void *_elemento)
+{
+	if (_elemento) {
+		int *elemento = _elemento;
+		(*elemento)++;
+	}
+}
+
+void pruebas_lista_destuir_todo()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	lista_t *lista = lista_crear();
+	lista_insertar(lista, &uno);
+	lista_insertar(lista, &dos);
+	lista_insertar(lista, &tres);
+	lista_insertar(lista, &cuatro);
+	lista_destruir_todo(lista, sumar_uno);
+	pa2m_afirmar(uno == 2 && dos == 3 && tres == 4 && cuatro == 5,
+		     "Se aplicó la función a todos los elementos.");
+	lista_destruir(lista);
+}
+
 void pruebas_lista_iterador_crear()
 {
 	int uno = 1, dos = 2, tres = 3, cuatro = 4;
@@ -357,8 +380,12 @@ void pruebas_lista_iterador_avanzar()
 		lista_iterador_avanzar(it_2) == true,
 		"Devuelve true si el iterador estaba en el tercer elemento.");
 	pa2m_afirmar(
+		lista_iterador_avanzar(it_2) == false &&
+			lista_iterador_elemento_actual(it_2) == NULL,
+		"Devuelve false si el iterador estaba en el último elemento, pero igualmente avanza el iterador.");
+	pa2m_afirmar(
 		lista_iterador_avanzar(it_2) == false,
-		"Devuelve false si el iterador estaba en el último elemento.");
+		"El iterador no avanza más allá de un elemento posterior al último de la lista, y no genera errores.");
 	lista_iterador_destruir(it_2);
 	lista_destruir(lista);
 }
@@ -402,6 +429,41 @@ void pruebas_lista_iterador_elemento_actual()
 	lista_destruir(lista);
 }
 
+bool sumar_uno_recorriendo_todo(void *_elemento, void *ignorado)
+{
+	if (_elemento) {
+		int *elemento = _elemento;
+		(*elemento)++;
+	}
+	return true;
+}
+
+void pruebas_lista_con_cada_elemento()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4, contexto = 100;
+	lista_t *lista = lista_crear();
+	pa2m_afirmar(lista_con_cada_elemento(NULL, sumar_uno_recorriendo_todo,
+					     &contexto) == 0,
+		     "Devuelve 0 si la lista es NULL.");
+	pa2m_afirmar(lista_con_cada_elemento(lista, NULL, &contexto) == 0,
+		     "Devuelve 0 si la lista es NULL.");
+	pa2m_afirmar(lista_con_cada_elemento(lista, sumar_uno_recorriendo_todo,
+					     &contexto) == 0,
+		     "Devuelve 0 si la lista está vacía.");
+	lista_insertar(lista, &uno);
+	lista_insertar(lista, &dos);
+	lista_insertar(lista, &tres);
+	lista_insertar(lista, &cuatro);
+	size_t elementos_recorridos = 0;
+	elementos_recorridos = lista_con_cada_elemento(
+		lista, sumar_uno_recorriendo_todo, &contexto);
+	pa2m_afirmar(elementos_recorridos == 4,
+		     "Se recorren todos los elementos.");
+	pa2m_afirmar(uno == 2 && dos == 3 && tres == 4 && cuatro == 5,
+		     "Se aplicó la función a todos los elementos.");
+	lista_destruir(lista);
+}
+
 void pruebas_de_lista()
 {
 	pa2m_nuevo_grupo("Pruebas `lista_crear`");
@@ -432,25 +494,29 @@ void pruebas_de_lista()
 	pruebas_lista_iterador_avanzar();
 	pa2m_nuevo_grupo("Pruebas `lista_iterador_elemento_actual`");
 	pruebas_lista_iterador_elemento_actual();
+	pa2m_nuevo_grupo("Pruebas `lista_con_cada_elemento`");
+	pruebas_lista_con_cada_elemento();
+	pa2m_nuevo_grupo("Pruebas `lista_destuir_todo`");
+	pruebas_lista_destuir_todo();
 }
 
 void pruebas_pila_crear()
 {
-	pila_t *pila = (pila_t *)lista_crear();
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila != NULL, "Se puede crar una pila.");
-	pa2m_afirmar(lista_tamanio((lista_t *)pila) == 0,
-		     "La pila creada está vacía.");
+	pa2m_afirmar(pila_tamanio(pila) == 0, "La pila creada está vacía.");
 	pa2m_afirmar(
 		lista_primero((lista_t *)pila) == NULL &&
 			lista_ultimo((lista_t *)pila) == NULL,
 		"Se inicializan en NULL los elementos principio y fin de la pila.");
-	lista_destruir((lista_t *)pila);
+	pa2m_afirmar(pila_tope(pila) == NULL, "El tope de la pila es NULL.");
+	pila_destruir(pila);
 }
 
 void pruebas_pila_apilar()
 {
 	int uno = 1, dos = 2, tres = 3, cuatro = 4;
-	pila_t *pila = (pila_t *)lista_crear();
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila_apilar(NULL, &uno) == NULL,
 		     "No se puede apilar con una pila NULL.");
 	pa2m_afirmar(pila_apilar(pila, NULL) == pila,
@@ -467,7 +533,7 @@ void pruebas_pila_apilar()
 void pruebas_pila_desapilar()
 {
 	int uno = 1, dos = 2, tres = 3, cuatro = 4;
-	pila_t *pila = (pila_t *)lista_crear();
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila_desapilar(NULL) == NULL,
 		     "No se puede desapilar con una pula NULL.");
 	pa2m_afirmar(pila_desapilar(pila) == NULL,
@@ -492,7 +558,7 @@ void pruebas_pila_desapilar()
 void pruebas_pila_tope()
 {
 	int uno = 1, dos = 2, tres = 3, cuatro = 4;
-	pila_t *pila = (pila_t *)lista_crear();
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila_tope(NULL) == NULL,
 		     "No se puede saber el tope de una pila NULL.");
 	pa2m_afirmar(pila_tope(pila) == NULL,
@@ -516,8 +582,8 @@ void pruebas_pila_tope()
 
 void pruebas_pila_tamanio()
 {
-	int uno = 1, dos = 2, tres = 3, cuatro = 4;
-	pila_t *pila = (pila_t *)lista_crear();
+	int uno = 1, dos = 2, tres = 3;
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila_tamanio(NULL) == 0, "Devuelve 0 con una pila NULL.");
 	pa2m_afirmar(pila_tamanio(pila) == 0,
 		     "El tamaño de una pila vacía es 0.");
@@ -530,16 +596,16 @@ void pruebas_pila_tamanio()
 	pila_apilar(pila, &tres);
 	pa2m_afirmar(pila_tamanio(pila) == 3,
 		     "El tamaño es el correcto luego de apilar.");
-	pila_apilar(pila, &cuatro);
-	pa2m_afirmar(pila_tamanio(pila) == 4,
-		     "El tamaño es el correcto luego de apilar.");
+	pila_desapilar(pila);
+	pa2m_afirmar(pila_tamanio(pila) == 2,
+		     "El tamaño es el correcto luego de desapilar.");
 	pila_destruir(pila);
 }
 
 void pruebas_pila_vacia()
 {
 	int uno = 1, dos = 2, tres = 3, cuatro = 4;
-	pila_t *pila = (pila_t *)lista_crear();
+	pila_t *pila = pila_crear();
 	pa2m_afirmar(pila_vacia(NULL) == false,
 		     "Devuelve false con una pila NULL.");
 	pa2m_afirmar(pila_vacia(pila) == true,
@@ -571,6 +637,145 @@ void pruebas_de_pila()
 	pruebas_pila_vacia();
 }
 
+void pruebas_cola_crear()
+{
+	cola_t *cola = cola_crear();
+	pa2m_afirmar(cola != NULL, "Se puede crear una cola.");
+	pa2m_afirmar(cola_tamanio(cola) == 0, "La cola creada está vacía.");
+	pa2m_afirmar(
+		lista_primero((lista_t *)cola) == NULL &&
+			lista_ultimo((lista_t *)cola) == NULL,
+		"Se inicializan en NULL los elementos principio y fin de la cola.");
+	pa2m_afirmar(cola_frente(cola) == NULL,
+		     "El frente de la cola es NULL.");
+	cola_destruir(cola);
+}
+
+void pruebas_cola_encolar()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	cola_t *cola = (cola_t *)lista_crear();
+	pa2m_afirmar(cola_encolar(NULL, 0) == NULL,
+		     "No se puede encolar en una cola NULL.");
+	pa2m_afirmar(cola_encolar(cola, NULL) == cola,
+		     "Se puede encolar un elemento NULL.");
+	pa2m_afirmar(cola_encolar(cola, &uno) == cola &&
+			     cola_encolar(cola, &dos) == cola &&
+			     cola_encolar(cola, &tres) == cola &&
+			     cola_encolar(cola, &cuatro) == cola,
+		     "Se pueden encolar varios elementos.");
+	pa2m_afirmar(cola_tamanio(cola) == 5,
+		     "Se actualiza correctamente el tamaño de la cola.");
+	cola_destruir(cola);
+}
+
+void pruebas_cola_desencolar()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	cola_t *cola = cola_crear();
+	pa2m_afirmar(cola_desencolar(NULL) == NULL,
+		     "No se puede desencolar de una cola NULL.");
+	pa2m_afirmar(cola_desencolar(cola) == NULL,
+		     "No se puede desencolar de una cola vacía");
+	cola_encolar(cola, &uno);
+	cola_encolar(cola, &dos);
+	cola_encolar(cola, &tres);
+	cola_encolar(cola, &cuatro);
+	pa2m_afirmar(
+		cola_desencolar(cola) == &uno,
+		"Se puede desencolar un elemento y devuelve el elemento correcto.");
+	pa2m_afirmar(cola_tamanio(cola) == 3,
+		     "Se actualiza correctamente el tamaño de la cola.");
+	cola_desencolar(cola);
+	cola_desencolar(cola);
+	cola_desencolar(cola);
+	pa2m_afirmar(cola_tamanio(cola) == 0,
+		     "Se pueden desencolar todos los elementos.");
+	cola_destruir(cola);
+}
+
+void pruebas_cola_frente()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	cola_t *cola = cola_crear();
+	pa2m_afirmar(cola_frente(NULL) == NULL,
+		     "No se puede saber el frente de una cola NULL.");
+	pa2m_afirmar(cola_frente(cola) == NULL,
+		     "No se puede saber el frente de una cola vacía.");
+	cola_encolar(cola, &uno);
+	cola_encolar(cola, &dos);
+	cola_encolar(cola, &tres);
+	cola_encolar(cola, &cuatro);
+	pa2m_afirmar(cola_frente(cola) == &uno, "El frente es el correcto.");
+	cola_desencolar(cola);
+	pa2m_afirmar(cola_frente(cola) == &dos,
+		     "El frente es el correcto luego de desencolar.");
+	cola_desencolar(cola);
+	pa2m_afirmar(cola_frente(cola) == &tres,
+		     "El frente es el correcto luego de desencolar.");
+	cola_desencolar(cola);
+	pa2m_afirmar(cola_frente(cola) == &cuatro,
+		     "El frente es el correcto luego de desencolar.");
+	cola_destruir(cola);
+}
+
+void pruebas_cola_tamanio()
+{
+	int uno = 1, dos = 2, tres = 3;
+	cola_t *cola = cola_crear();
+	pa2m_afirmar(cola_tamanio(NULL) == 0, "Devuelve 0 con una cola NULL.");
+	pa2m_afirmar(cola_tamanio(cola) == 0,
+		     "El tamaño de una cola vacía es 0.");
+	cola_encolar(cola, &uno);
+	pa2m_afirmar(cola_tamanio(cola) == 1,
+		     "El tamaño es el correcto luego de encolar.");
+	cola_encolar(cola, &dos);
+	pa2m_afirmar(cola_tamanio(cola) == 2,
+		     "El tamaño es el correcto luego de encolar.");
+	cola_encolar(cola, &tres);
+	pa2m_afirmar(cola_tamanio(cola) == 3,
+		     "El tamaño es el correcto luego de encolar.");
+	cola_desencolar(cola);
+	pa2m_afirmar(cola_tamanio(cola) == 2,
+		     "El tamaño es el correcto luego de desencolar.");
+	cola_destruir(cola);
+}
+
+void pruebas_cola_vacia()
+{
+	int uno = 1, dos = 2, tres = 3, cuatro = 4;
+	cola_t *cola = cola_crear();
+	pa2m_afirmar(cola_vacia(NULL) == false,
+		     "Devuelve false con una cola NULL.");
+	pa2m_afirmar(cola_vacia(cola) == true,
+		     "Devuelve true con una cola sin elementos.");
+	cola_encolar(cola, &uno);
+	pa2m_afirmar(cola_vacia(cola) == false,
+		     "Devuelve false con una cola con un elemento.");
+	cola_encolar(cola, &dos);
+	cola_encolar(cola, &tres);
+	cola_encolar(cola, &cuatro);
+	pa2m_afirmar(cola_vacia(cola) == false,
+		     "Devuelve false con una cola con varios elementos.");
+	cola_destruir(cola);
+}
+
+void pruebas_de_cola()
+{
+	pa2m_nuevo_grupo("Pruebas `cola_crear`");
+	pruebas_cola_crear();
+	pa2m_nuevo_grupo("Pruebas `cola_encolar`");
+	pruebas_cola_encolar();
+	pa2m_nuevo_grupo("Pruebas `cola_desencolar`");
+	pruebas_cola_desencolar();
+	pa2m_nuevo_grupo("Pruebas `cola_frente`");
+	pruebas_cola_frente();
+	pa2m_nuevo_grupo("Pruebas `cola_tamanio`");
+	pruebas_cola_tamanio();
+	pa2m_nuevo_grupo("Pruebas `cola_vacia`");
+	pruebas_cola_vacia();
+}
+
 int main()
 {
 	pa2m_nuevo_grupo(
@@ -579,7 +784,11 @@ int main()
 	pa2m_nuevo_grupo("------------- PRUEBAS DE LISTA --------------");
 	pruebas_de_lista();
 
-	pa2m_nuevo_grupo("--------------- PRUEBAS PILA ----------------");
+	pa2m_nuevo_grupo("-------------- PRUEBAS DE PILA --------------");
 	pruebas_de_pila();
+
+	pa2m_nuevo_grupo("-------------- PRUEBAS COLA --------------");
+	pruebas_de_cola();
+
 	return pa2m_mostrar_reporte();
 }

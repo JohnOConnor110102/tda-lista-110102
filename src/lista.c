@@ -329,7 +329,8 @@ bool lista_iterador_tiene_siguiente(lista_iterador_t *iterador)
 bool lista_iterador_avanzar(lista_iterador_t *iterador)
 {
 	if (iterador == NULL ||
-	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS)
+	    iterador->lista->cantidad_nodos == LISTA_SIN_NODOS ||
+	    iterador->posicion_actual > iterador->lista->cantidad_nodos - 1)
 		return false;
 
 	if (iterador->posicion_actual == iterador->lista->cantidad_nodos - 1) {
