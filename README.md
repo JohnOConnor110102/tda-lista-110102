@@ -2,26 +2,32 @@
 <img width="32px" src="img/algo2.svg">
 </div>
 
-# NOMBRE TP/TDA
+# TDA LISTA - PILA - COLA
 
-## Repositorio de (Nombre Apellido) - (Padrón) - (Mail)
+## Repositorio de John O'Connor - 110102 - johnoc1712@gmail.com
 
 - Para compilar:
 
 ```bash
-línea de compilación
+Pruebas cátedra: gcc -std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -O2 -g src/*.c pruebas_chanutron.o -o pruebas_chanutron
+
+Pruebas alumno: gcc -std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -O2 -g src/*.c pruebas_alumno.c -o pruebas_alumno
 ```
 
 - Para ejecutar:
 
 ```bash
-línea de ejecución
+Pruebas cátedra: ./pruebas_chanutron
+
+Pruebas alumno: ./pruebas_alumno
 ```
 
 - Para ejecutar con valgrind:
 
 ```bash
-línea con valgrind
+Pruebas cátedra: valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 --show-leak-kinds=all --trace-children=yes ./pruebas_chanutron
+
+Pruebas alumno: valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 --show-leak-kinds=all --trace-children=yes ./pruebas_alumno
 ```
 
 ---
@@ -113,3 +119,43 @@ En principio, la complejidad de las funciones en cada implementación de lista, 
   Vector dinámico: para el caso de obtener en el medio, tendría una complejidad de O(1), ya que se puede acceder a dichos elementos mediante el índice del vector. Mientras que para las operaciones de insertar y eliminar, sería necesario mover los elementos posteriores a la posición a eliminar o insertar dentro del vector. Teniendo en cuenta que se toma en el peor de los casos que se hacen N-iteraciones para mover dichos elementos, la complejidad de estas operaciones resulta O(n).
 
 - Explica la complejidad de las operaciones implementadas en tu trabajo para la pila y la cola.
+
+Complejidad de operaciones en PILA:
+
+- `pila_crear`
+  Esta función presenta una complejidad O(1), ya que las instrucciones que realiza son invocar a la función `lista_crear`, y dentro de la misma invocar a la función `calloc`. Como esta última reserva espacio en memoria dinámica para el struct, e inicializa los campos del mismo en 0 y NULL dependiendo el caso, todas operaciones O(1), finalmente la función formaría O(k1), terminando en O(1).
+
+- `pila_apilar`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_insertar_en_posicion`. Si bien esta última, en el peor de los casos tiene una complejidad O(n), ya que sería necesario iterar hasta el (n-1)-ésimo elemento de la lista, todas las veces que `pila_apilar` invoque a dicha función, la invocará indicando la posición 0 de la lista, lo que quiere decir que nunca deberá hacer alguna iteración. Luego, teniendo en cuenta que al no tener que iterar, las instrucciones restantes son asignasiones con complejidad O(1), la función `pila_apilar` resulta tener una complejidad O(1).
+
+- `pila_desapilar`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_quitar_de_posicion`. Si bien esta última, en el peor de los casos tiene una complejidad O(n), ya que sería necesario iterar hasta el (n-1)-ésimo elemento de la lista, todas las veces que `pila_desapilar` invoque a dicha función, la invocará indicando la posición 0 de la lista, lo que quiere decir que nunca deberá hacer alguna iteración. Luego, teniendo en cuenta que al no tener que iterar, las instrucciones restantes son asignasiones con complejidad O(1), la función `pila_desapilar` resulta tener una complejidad O(1).
+
+- `pila_tope`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_primero`, cuya complejidad resulta O(1), ya que solo verifica parámetros y devuelve el elemento del primer nodo de la lista, instrucciones con complejidad O(1). Por lo tanto, la complejidad de esta función resulta O(1).
+
+- `pila_tamanio`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_tamanio`, cuya complejidad resulta O(1), ya que únicamente verifica el parámetro y devuelve la cantidad de elementos de la lista. Por lo tanto, la complejidad de esta función resulta O(1).
+
+- `pila_vacia`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_vacia`, cuya complejidad es O(1) ya que solo realiza verificaciones O(1) y devuelve true o false en función de los mismos. Por lo tanto, la complejidad de esta función resulta O(1).
+
+Complejidad de operaciones en COLA:
+
+- `cola_crear`
+  Esta función presenta una complejidad O(1), ya que las instrucciones que realiza son invocar a la función `lista_crear`, y dentro de la misma invocar a la función `calloc`. Como esta última reserva espacio en memoria dinámica para el struct, e inicializa los campos del mismo en 0 y NULL dependiendo el caso, todas operaciones O(1), finalmente la función formaría O(k1), terminando en O(1).
+
+- `cola_encolar`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_insertar`, cuya complejidad en el peor de los casos es O(1), al ser todas las instrucciones que realiza asignasiones con complejidad O(1). Por lo tanto, la complejidad de esta función resulta O(1).
+
+- `cola_desencolar`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_quitar_de_posicion`. Si bien esta última, en el peor de los casos tiene una complejidad O(n), ya que sería necesario iterar hasta el (n-1)-ésimo elemento de la lista, todas las veces que `cola_desencolar` invoque a dicha función, la invocará indicando la posición 0 de la lista, lo que quiere decir que nunca deberá hacer alguna iteración. Luego, teniendo en cuenta que al no tener que iterar, las instrucciones restantes son asignasiones con complejidad O(1), la función `cola_desencolar` resulta tener una complejidad O(1).
+
+- `cola_frente`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_primero`, cuya complejidad resulta O(1), ya que solo verifica parámetros y devuelve el elemento del primer nodo de la lista, instrucciones con complejidad O(1). Por lo tanto, la complejidad de esta función resulta O(1).
+
+- `cola_tamanio`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_tamanio`, cuya complejidad resulta O(1), ya que únicamente verifica el parámetro y devuelve la cantidad de elementos de la lista. Por lo tanto, la complejidad de esta función resulta O(1).
+
+- `cola_vacia`
+  Esta función devuelve el valor que recibe una vez finalizada la función `lista_vacia`, cuya complejidad es O(1) ya que solo realiza verificaciones O(1) y devuelve true o false en función de los mismos. Por lo tanto, la complejidad de esta función resulta O(1).
