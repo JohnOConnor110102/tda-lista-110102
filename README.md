@@ -34,33 +34,39 @@ Pruebas alumno: valgrind --leak-check=full --track-origins=yes --show-reachable=
 
 ## Funcionamiento
 
-Explicación de cómo funcionan las estructuras desarrolladas en el TP y el funcionamiento general del mismo.
+Las estructuras desarrolladas en el TP se basan en una LISTA DE NODOS SIMPLEMENTE ENLAZADOS.
 
-Aclarar en esta parte todas las decisiones que se tomaron al realizar el TP, cosas que no se aclaren en el enunciado, fragmentos de código que necesiten explicación extra, etc.
+En principio, se crea una lista mediante `lista_crear`, proceso representado en el siguiente diagrama de memoria:
 
-Incluír **EN TODOS LOS TPS** los diagramas relevantes al problema (mayormente diagramas de memoria para explicar las estructuras, pero se pueden utilizar otros diagramas si es necesario).
+![Diagrama memoria lista_crear](img/diagrama_lista_crear.jpeg)
 
-### Por ejemplo:
+A partir de esta lista, se pueden realizar diversas operaciones, siendo estas: insertar en cualquier posición de la lista, quitar en cualquier posición de la lista, obtener el elemento de cualquier posición de la lista, buscar dentro de los elementos el primero de ellos que cumpla cierta condición aplicada (lista_buscar_elemento), verificar si la lista está vacía, obtener el tamañod de la lista y liberar la memoria reservada por la lista, teniendo la opción de aplicar una función a parte a cada uno de los elementos de la lista en el mismo proceso.
 
-El programa funciona abriendo el archivo pasado como parámetro y leyendolo línea por línea. Por cada línea crea un registro e intenta agregarlo al vector. La función de lectura intenta leer todo el archivo o hasta encontrar el primer error. Devuelve un vector con todos los registros creados.
+Para la inserción de elementos se utiliza la función `crear_nodo`, cuyo proceso de utilización de memoria se ve representado en el siguiente esquema:
 
-<div align="center">
-<img width="70%" src="img/diagrama1.svg">
-</div>
+![Diagrama memoria crar_nodo](img/diagrama_crear_nodo.jpeg)
 
-En el archivo `sarasa.c` la función `funcion1` utiliza `realloc` para agrandar la zona de memoria utilizada para conquistar el mundo. El resultado de `realloc` lo guardo en una variable auxiliar para no perder el puntero original en caso de error:
+A su vez, se da la posibilidad de crear un iterador interno para poder recorrer la lista, mediante `lista_iterador_crear`. Dentro del mismo se pueden realizar distintas operaciones, en este caso siendo: verificar si el iterador tiene un elemento siguiente para iterar, avanzar el iterador, obtener el elemento actual en que está parado el iterador, y destruir el iterador.
 
-```c
-int *vector = realloc(vector_original, (n+1)*sizeof(int));
+El proceso de manejo de memoria dinámica de `lista_iterador_crear` se ve representado en el siguiente diagrama:
 
-if(vector == NULL)
-    return -1;
-vector_original = vector;
-```
+![Diagrama memoria lista_iterador_crear](img/diagrama_lista_iterador_crear.jpeg)
 
-<div align="center">
-<img width="70%" src="img/diagrama2.svg">
-</div>
+A parte de la estructura LISTA, se pueden crear tanto una COLA como una PILA. En ambos casos, se reutiliza totalmente la implementación de una LISTA, únicamente teniendo las consideraciones necesesarias en cada caso.
+
+En cuanto a la COLA, las operaciones disponibles son las siguientes: crear la cola, encolar un elemento a la misma, desencolar un elemento, obtener el frente de la cola, obtener su tamaño, verificar si está vacía, y destruirla, es decir liberar la memoria que haya reservado.
+
+Para su implementación, al haberse reutilizado las estructuras de LISTA, se realizaron los mismos manejos de memoria representados en los diagramas anteriores.
+
+Por otro lado, en la PILA, las operaciones disponibles son las siguientes: crear una pila, apilar un elemento, desapilar un elemento, obtener el tope de la pila, obtener su tamaño, verificar si está vacía, y destruirla liberando su memoria reservada.
+
+Para el desarrollo del TP, se crearon funciones auxiliares para ayudar con la modularización del código y lograr una visualización más prolija del mismo.
+
+La función `insertar_en_lista_sin_nodos` se utiliza para el caso borde en que se quiera insertar el primer elemento a la lista, y se encarga de inicializar y actualizar los campos correspondientes de la lista, devolviendola al final de su ejecución.
+
+La función `iterar_hasta_posicion` recorre los elementos de la lista hasta la posición indicada y devuelve el nodo en que finalizó la iteración.
+
+La función `crear_nodo` se encarga de reservar la memoria dinámica necesaria para el nodo a crear, e inicializa los valores del mismo con los valores correspondientes, para finalmente devolver el nodo creado.
 
 ---
 

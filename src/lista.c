@@ -28,8 +28,7 @@ struct lista_iterador {
 	lista_t *lista;
 };
 
-lista_t *insertar_en_lista_sin_nodos(lista_t *lista, void *elemento,
-				     nodo_t *nodo)
+lista_t *insertar_en_lista_sin_nodos(lista_t *lista, nodo_t *nodo)
 {
 	if (lista == NULL)
 		return NULL;
@@ -121,7 +120,7 @@ lista_t *lista_insertar(lista_t *lista, void *elemento)
 		return NULL;
 
 	if (lista->cantidad_nodos == LISTA_SIN_NODOS)
-		return insertar_en_lista_sin_nodos(lista, elemento, nodo);
+		return insertar_en_lista_sin_nodos(lista, nodo);
 
 	lista->fin->siguiente = nodo;
 	lista->fin = nodo;
@@ -152,7 +151,7 @@ lista_t *lista_insertar_en_posicion(lista_t *lista, void *elemento,
 	lista->cantidad_nodos++;
 	return lista;
 }
-// ! Anotar en readme que asumo que en caso de que la lista está vacía, se considera error.
+
 void *lista_quitar(lista_t *lista)
 {
 	if (lista == NULL || lista->cantidad_nodos == LISTA_SIN_NODOS)
@@ -264,16 +263,7 @@ void lista_destruir(lista_t *lista)
 	if (lista == NULL)
 		return;
 
-	int contador = 0;
-	nodo_t *nodo_actual = lista->inicio;
-	nodo_t *nodo_aux = nodo_actual->siguiente;
-	while (contador < lista->cantidad_nodos) {
-		nodo_aux = nodo_actual->siguiente;
-		free(nodo_actual);
-		nodo_actual = nodo_aux;
-		contador++;
-	}
-	free(lista);
+	lista_destruir_todo(lista, NULL);
 }
 
 void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
@@ -281,17 +271,14 @@ void lista_destruir_todo(lista_t *lista, void (*funcion)(void *))
 	if (lista == NULL)
 		return;
 
-	if (funcion == NULL) {
-		lista_destruir(lista);
-		return;
-	}
-
 	int contador = 0;
 	nodo_t *nodo_actual = lista->inicio;
 	nodo_t *nodo_aux = nodo_actual->siguiente;
 	while (contador < lista->cantidad_nodos) {
 		nodo_aux = nodo_actual->siguiente;
-		funcion(nodo_actual->elemento);
+		if (funcion != NULL)
+			funcion(nodo_actual->elemento);
+
 		free(nodo_actual);
 		nodo_actual = nodo_aux;
 		contador++;
@@ -333,14 +320,12 @@ bool lista_iterador_avanzar(lista_iterador_t *iterador)
 	    iterador->posicion_actual > iterador->lista->cantidad_nodos - 1)
 		return false;
 
-	if (iterador->posicion_actual == iterador->lista->cantidad_nodos - 1) {
-		iterador->nodo_actual = iterador->nodo_actual->siguiente;
-		iterador->posicion_actual++;
-		return false;
-	}
-
 	iterador->nodo_actual = iterador->nodo_actual->siguiente;
 	iterador->posicion_actual++;
+
+	if (iterador->posicion_actual == iterador->lista->cantidad_nodos)
+		return false;
+
 	return true;
 }
 
