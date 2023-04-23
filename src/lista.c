@@ -85,6 +85,8 @@ void *quitar_de_lista_con_un_nodo(lista_t *lista)
 	void *elemento_unico_nodo = lista->inicio->elemento;
 	free(lista->inicio);
 	lista->cantidad_nodos--;
+	lista->fin = NULL;
+	lista->inicio = NULL;
 	return elemento_unico_nodo;
 }
 
@@ -103,11 +105,7 @@ void *quitar_de_posicion_cero(lista_t *lista)
 
 lista_t *lista_crear()
 {
-	lista_t *lista = calloc(1, sizeof(lista_t));
-	if (lista == NULL)
-		return NULL;
-
-	return lista;
+	return calloc(1, sizeof(lista_t));
 }
 
 lista_t *lista_insertar(lista_t *lista, void *elemento)
@@ -206,24 +204,17 @@ void *lista_buscar_elemento(lista_t *lista, int (*comparador)(void *, void *),
 	    lista->cantidad_nodos == LISTA_SIN_NODOS)
 		return NULL;
 
-	int contador = 0;
-	bool elemento_encontrado = false;
+	void *elemento_buscado = NULL;
 	nodo_t *nodo_actual = lista->inicio;
-	nodo_t *nodo_aux;
-	while (contador < lista->cantidad_nodos && !elemento_encontrado) {
-		if (comparador(nodo_actual->elemento, contexto) ==
-		    ELEMENTO_ENCONTRADO) {
-			elemento_encontrado = true;
-		} else {
-			nodo_aux = nodo_actual->siguiente;
-			nodo_actual = nodo_aux;
-			contador++;
-		}
+	while (nodo_actual != NULL &&
+	       comparador(nodo_actual->elemento, contexto) !=
+		       ELEMENTO_ENCONTRADO) {
+		nodo_actual = nodo_actual->siguiente;
 	}
-	if (contador == lista->cantidad_nodos)
-		return NULL;
+	if (nodo_actual)
+		elemento_buscado = nodo_actual->elemento;
 
-	return nodo_actual->elemento;
+	return elemento_buscado;
 }
 
 void *lista_primero(lista_t *lista)
